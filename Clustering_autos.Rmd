@@ -1,0 +1,115 @@
+---
+title: "Práctica 3"
+author: "Miguel Sánchez Cano"
+date: "10/28/2022"
+output: word_document
+---
+
+## Cargamos la librería cluster
+```{r}
+library(cluster)
+```
+
+## Importamos los datos
+```{r}
+datos<-read.csv2("/Users/miguel/Documents/Git_Hub_Proyects/Clustering-in-R/autos.csv",sep=";",header=T)
+```
+
+## Eliminación de variables no numéricas
+
+Eliminamos de los datos aquellas variables que no son numéricas, dejando asi las variables que nos indica el enunciado
+
+```{r}
+#nos quedamos solo con las variables numéricas
+datos = datos[1:155,c(1,3,4,6,10)]
+#omitimos los posibles NAs
+datos<-na.omit(datos)
+
+head(datos)
+```
+
+
+## Método jerárquico aglomerativo “sinle linkage”
+
+Creamos la matriz de distancias euclideas
+```{r}
+d <- dist(datos, method = "euclidean")
+```
+
+Aplicamos el método jerarquico aglomerativo
+```{r}
+fit <- hclust(d, method="single")
+```
+
+Realizamos un dendrogrma para visualizar los clusters
+```{r}
+#dendograma
+plot(fit, cex=0.7)
+```
+
+Como vemos, principalmente agrupa a los autos en dos clusters
+
+```{r}
+cutree(fit, k=2)
+```
+
+Al realizar dos clusters podemos ver como todos los automoviles pertenecen al cluster 1, a excepción de uno que pertenece al cluster 2.
+
+```{r}
+cutree(fit, k=3)
+```
+
+Si establecemos tres clusters, vemos como todos los autos pertenecen al cluster 1, a excepción de una instancia que pertenece al cluster 2 y vemos como ninguno vehículo pertenece al cluster 3.
+
+
+```{r}
+cutree(fit, k=4)
+```
+
+Si establecemos cuatro clusters, vemos como todos los autos pertenecen al cluster 1, a excepción de una instancia que pertenece al cluster 4 y ninguno vehículo pertenece al cluster 2 y 3.
+
+Conclusión-> da igual el valor q le demos a k, siempre nos va a separar los datos en dos clusters.
+
+
+## Método k-means
+
+```{r}
+# k=2
+kmeans(datos,2)
+# k=3
+kmeans(datos,3)
+# k=4
+kmeans(datos,4)
+```
+
+Como poemos ver el método kmeans reparte los datos entre clusters de una manera mucho más equitativa que la método jerarquico aglomerativo. Por ejemplo con k = 2, los tamaños de los clusters son de 42 y 108 con kmeans, y de 149 y 1 con el método jerarquico aglomerativo.
+
+Además, podemos observar que cuanto mas clusters haya mas homógeneos seran los datos de un mismo clusters.
+
+## Clustering para variables
+
+Creamos la matriz de correlaciones
+```{r}
+#matriz de correlaciones
+matriz_corr<-cor(datos)
+```
+
+Calculamos las distancias entre las variables
+```{r}
+d_variables<-as.dist(sqrt((1-matriz_corr)/2))
+```
+
+Creamos los clusters
+```{r}
+fit2<-hclust(d_variables)
+fit2
+```
+
+
+Hacemos un dendrograma para visualizar los clusters
+```{r}
+#Dendrograma
+plot(fit2,cex=0.7)
+```
+
+Viendo el dendrograma podemos ver como en general dos clusters de variables, uno donde agrupa las variables "mpg" y "acceleration", y otro clusters donde agrupa las variables "power", "price" y "weight". De esta manera podemos ver como las variables se agrupan en clusters según la correlación que haya entre ellas. "Power" y "weight" estarán bastante correladas al igual que lo estan "mpg" y "acceleration".
